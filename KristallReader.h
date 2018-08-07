@@ -8,11 +8,14 @@ class KristallReader{
     private:
         int mp;
         bool mpChanged;
+        
         MFRC522::MIFARE_Key key;
     public:
         void setup();
         bool isMPChanged();
         int getMPInKristall();
         void checkMPInKristall();
+        bool isKristallPresent();
+        
 };
 #endif

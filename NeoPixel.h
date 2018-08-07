@@ -7,12 +7,13 @@
 class NeoPixel{
     private:
         void SetRandomSeed();
-        
+        int fader;
 
     public:
         NeoPixel();
         void setup();
         void makeLight();
         void switchColor(int);
+        void fadeToRed(unsigned long kristallTime, unsigned long timeUsed);
 };
 #endif

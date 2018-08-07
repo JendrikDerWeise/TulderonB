@@ -3,7 +3,7 @@
 Touch::Touch(){
     cap = Adafruit_CAP1188();
     cap2 = Adafruit_CAP1188();
-	
+	kristallFreigegeben = false;
 }
 
 void Touch::setup(Stream *_serialRef){
@@ -92,10 +92,19 @@ void Touch::checkCode() {
 			if (counter == 4) {
 				_serial->println("Geschafft");
 				//display->showText("Geschafft");
+				kristallFreigegeben = true;
 				return;
 			}
 		}
 	}
 	_serial->println("Zeit um");
 	//display->showText("Zeit um");
+}
+
+bool Touch::isKristallFreigegeben(){
+    return kristallFreigegeben;
+}
+
+void Touch::kristallSperren(){
+	kristallFreigegeben = false;
 }

@@ -3,8 +3,11 @@
 const uint16_t PixelCount = 24;
 const uint8_t PixelPin = 5;
 const uint8_t AnimationChannels = 1;
+const uint16_t animationTime = 10000;
+
 RgbColor target(255,0,255);
 uint16_t effectState;
+uint16_t time;
 
 NeoPixelAnimator animations(AnimationChannels);
 NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> strip(PixelCount, PixelPin);
@@ -19,7 +22,8 @@ MyAnimationState animationState[AnimationChannels];
 
 NeoPixel::NeoPixel(){
     effectState = 0;
-    
+    fader = 0;
+    time = animationTime;
 }
 
 
@@ -66,8 +70,6 @@ void FadeInFadeOutRinseRepeat(float luminance, RgbColor target)
 {
     if (effectState == 0)
     {
-        uint16_t time = random(800, 2000);
-
         animationState[0].StartingColor = strip.GetPixelColor(0);
         animationState[0].EndingColor = target;
 
@@ -76,8 +78,6 @@ void FadeInFadeOutRinseRepeat(float luminance, RgbColor target)
     else if (effectState == 1)
     {
         // fade to black
-        uint16_t time = random(600, 700);
-
         animationState[0].StartingColor = strip.GetPixelColor(0);
         animationState[0].EndingColor = RgbColor(0);
 
@@ -101,8 +101,11 @@ void NeoPixel::makeLight()
 }
 
 void NeoPixel::switchColor(int color){
+    animations.StopAnimation(0);
     switch(color){
         case 1: //purple
+            fader = 0;
+            time = animationTime;
             target = RgbColor(255,0,255);
             break;
         case 2: //red
@@ -114,4 +117,25 @@ void NeoPixel::switchColor(int color){
         default:
             break;
     }
+
+    strip.ClearTo(target);
+    strip.Show();
+}
+
+void NeoPixel::fadeToRed(unsigned long kristallTime, unsigned long timeUsed){
+    unsigned long tick = kristallTime / 255;
+    unsigned long tock = kristallTime / (animationTime-200);
+
+    if(timeUsed > (fader+1) * tick && fader < 256){
+        fader++;
+        target = RgbColor(fader,255 - fader,10);
+        
+    }
+
+    //Animationsgeschwindigkeit erhöhen   
+    if(timeUsed < (animationTime-200) * tock && time > 200){
+        time = time - tock;
+        Serial.println("1");
+    }
+
 }

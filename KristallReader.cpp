@@ -6,6 +6,7 @@
 MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance.
 
 void KristallReader::setup(){
+    
     KristallReader::mp=0;
     KristallReader::mpChanged = false;
     SPI.begin();        // Init SPI bus
@@ -69,3 +70,8 @@ int KristallReader::getMPInKristall(){
     mpChanged = false;
     return mp;
 }
+
+bool KristallReader::isKristallPresent(){
+    return mfrc522.PICC_IsNewCardPresent();
+}
+
