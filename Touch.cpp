@@ -3,7 +3,7 @@
 Touch::Touch(){
     cap = Adafruit_CAP1188();
     cap2 = Adafruit_CAP1188();
-	kristallFreigegeben = false;
+	kristallFreigegeben = true;
 }
 
 void Touch::setup(Stream *_serialRef){

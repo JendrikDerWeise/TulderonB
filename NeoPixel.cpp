@@ -124,18 +124,23 @@ void NeoPixel::switchColor(int color){
 
 void NeoPixel::fadeToRed(unsigned long kristallTime, unsigned long timeUsed){
     unsigned long tick = kristallTime / 255;
-    unsigned long tock = kristallTime / (animationTime-200);
 
     if(timeUsed > (fader+1) * tick && fader < 256){
         fader++;
         target = RgbColor(fader,255 - fader,10);
-        
+        if(time > 200){
+            time -= animationTime / 255;
+            Serial.println(time);
+        }
     }
 
     //Animationsgeschwindigkeit erhöhen   
-    if(timeUsed < (animationTime-200) * tock && time > 200){
-        time = time - tock;
-        Serial.println("1");
-    }
+/*    if(timeUsed < kristallTime){
+        if(time > 200){
+            time -= tock;
+            Serial.println(time);
+        }
+    }*/
 
 }
+
