@@ -1,7 +1,7 @@
 #include "NeoPixel.h"
 
 const uint16_t PixelCount = 24;
-const uint8_t PixelPin = 5;
+const uint8_t PixelPin = 8;
 const uint8_t AnimationChannels = 1;
 const uint16_t animationTime = 10000;
 
@@ -24,6 +24,8 @@ NeoPixel::NeoPixel(){
     effectState = 0;
     fader = 0;
     time = animationTime;
+    blinkTasks = 0;
+    actualColor = 1;
 }
 
 
@@ -101,25 +103,41 @@ void NeoPixel::makeLight()
 }
 
 void NeoPixel::switchColor(int color){
-    animations.StopAnimation(0);
-    switch(color){
-        case 1: //purple
-            fader = 0;
-            time = animationTime;
-            target = RgbColor(255,0,255);
-            break;
-        case 2: //red
-            target = RgbColor(255,0,0);
-            break;
-        case 3: //green
-            target = RgbColor(50,255,10);
-            break;
-        default:
-            break;
-    }
+        animations.StopAnimation(0);
+        switch(color){
+            case 1: //purple
+                fader = 0;
+                time = animationTime;
+                target = RgbColor(255,0,255);
+                break;
+            case 2: //red
+                target = RgbColor(255,0,0);
+                break;
+            case 3: //green
+                target = RgbColor(50,255,10);
+                break;
+            default:
+                break;
+        }
+        strip.ClearTo(0);
+        //strip.Show();    
+}
 
-    strip.ClearTo(target);
-    strip.Show();
+
+void NeoPixel::redBlink(int times){
+    for(int i = 0; i < times; i++){
+        for (uint16_t pixel = 0; pixel < PixelCount; pixel++)
+            strip.SetPixelColor(pixel, RgbColor(255,0,0));
+        strip.Show();
+        unsigned long now = millis();
+        while(millis()-now < 500){}
+        for (uint16_t pixel = 0; pixel < PixelCount; pixel++)
+            strip.SetPixelColor(pixel, RgbColor(0,0,0));
+        strip.Show();
+        now = millis();
+        while(millis()-now < 300){}
+    }
+    makeLight();
 }
 
 void NeoPixel::fadeToRed(unsigned long kristallTime, unsigned long timeUsed){
@@ -128,19 +146,13 @@ void NeoPixel::fadeToRed(unsigned long kristallTime, unsigned long timeUsed){
     if(timeUsed > (fader+1) * tick && fader < 256){
         fader++;
         target = RgbColor(fader,255 - fader,10);
-        if(time > 200){
+        if(time > 500){
             time -= animationTime / 255;
-            Serial.println(time);
+            //Serial.println(time);
         }
     }
-
-    //Animationsgeschwindigkeit erhöhen   
-/*    if(timeUsed < kristallTime){
-        if(time > 200){
-            time -= tock;
-            Serial.println(time);
-        }
-    }*/
-
 }
 
+void NeoPixel::setEffectState(){
+    effectState = 0;
+}

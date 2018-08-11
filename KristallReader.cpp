@@ -68,6 +68,7 @@ bool KristallReader::isMPChanged(){
 
 int KristallReader::getMPInKristall(){
     mpChanged = false;
+    //Serial.print("MP");Serial.print(mp);
     return mp;
 }
 
