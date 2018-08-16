@@ -38,11 +38,17 @@ void Eskalation::dezZstufe(){
 }
 
 void Eskalation::redBlinking(){
-    light->redBlink(eStufe);
+    //light->redBlink(eStufe);
 }
 
 void Eskalation::alarm(){
-    //IMPLEMENT play alarm sound
+    Serial.print("alarm");
+}
+
+void Eskalation::explosion(){
+    Serial.print("bumm");
+    //redBlinking();
+    fogger();
 }
 
 void Eskalation::fogger(){
@@ -57,19 +63,19 @@ void Eskalation::fogger(){
 void Eskalation::eskalate(){
     switch(eStufe){
         case 1:
-            redBlinking();
+            //redBlinking();
             break;
         case 2:
-            redBlinking();
             alarm();
+            //redBlinking();
             break;
         case 3:
-            redBlinking();
             alarm();
-            fogger();
+            //redBlinking();
+            //fogger();
             break;
         case 4:
-            //bombe explodiert
+            explosion();
             break;
     }
 }

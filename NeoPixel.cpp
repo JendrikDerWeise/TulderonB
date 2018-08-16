@@ -3,7 +3,7 @@
 const uint16_t PixelCount = 24;
 const uint8_t PixelPin = 8;
 const uint8_t AnimationChannels = 1;
-const uint16_t animationTime = 10000;
+const uint16_t animationTime = 10500;
 
 RgbColor target(255,0,255);
 uint16_t effectState;
@@ -23,37 +23,18 @@ MyAnimationState animationState[AnimationChannels];
 NeoPixel::NeoPixel(){
     effectState = 0;
     fader = 0;
-    time = animationTime;
-    blinkTasks = 0;
-    actualColor = 1;
+    setMPmultiplier(100);
+    time = animationTime - mpMultiplier;
+    //switchColor(1);
 }
 
 
 void NeoPixel::setup(){
+    switchColor(1);
     strip.Begin();
     strip.Show();
-
-    SetRandomSeed();
 }
 
-
-void NeoPixel::SetRandomSeed()
-{
-    uint32_t seed;
-
-    // random works best with a seed that can use 31 bits
-    // analogRead on a unconnected pin tends toward less than four bits
-    seed = analogRead(0);
-    delay(1);
-
-    for (int shifts = 3; shifts < 31; shifts += 3)
-    {
-        seed ^= analogRead(0) << shifts;
-        delay(1);
-    }
-
-    randomSeed(seed);
-}
 
 void BlendAnimUpdate(const AnimationParam& param)
 {
@@ -103,27 +84,33 @@ void NeoPixel::makeLight()
 }
 
 void NeoPixel::switchColor(int color){
-        animations.StopAnimation(0);
-        switch(color){
-            case 1: //purple
-                fader = 0;
-                time = animationTime;
-                target = RgbColor(255,0,255);
-                break;
-            case 2: //red
-                target = RgbColor(255,0,0);
-                break;
-            case 3: //green
-                target = RgbColor(50,255,10);
-                break;
-            default:
-                break;
+    animations.StopAnimation(0);
+    switch(color){
+        case 1: //purple
+            fader = 0;
+            time = animationTime - mpMultiplier;
+            target = RgbColor(255,0,255);
+            break;
+        case 2: //red
+            target = RgbColor(255,0,0);
+            break;
+        case 3: //green
+            target = RgbColor(50,255,10);
+            break;
+        case 4: //aus
+            target = RgbColor(0,0,0);
+            break;
+        case 5: //Eisblau
+            target = RgbColor(230,240,255);
+            break;
+        default:
+            break;
         }
-        strip.ClearTo(0);
+    strip.ClearTo(0);
         //strip.Show();    
 }
 
-
+/*
 void NeoPixel::redBlink(int times){
     for(int i = 0; i < times; i++){
         for (uint16_t pixel = 0; pixel < PixelCount; pixel++)
@@ -138,7 +125,7 @@ void NeoPixel::redBlink(int times){
         while(millis()-now < 300){}
     }
     makeLight();
-}
+}*/
 
 void NeoPixel::fadeToRed(unsigned long kristallTime, unsigned long timeUsed){
     unsigned long tick = kristallTime / 255;
@@ -155,4 +142,8 @@ void NeoPixel::fadeToRed(unsigned long kristallTime, unsigned long timeUsed){
 
 void NeoPixel::setEffectState(){
     effectState = 0;
+}
+
+void NeoPixel::setMPmultiplier(int mp){
+    mpMultiplier = mp * 100;
 }

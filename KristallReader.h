@@ -16,6 +16,6 @@ class KristallReader{
         int getMPInKristall();
         void checkMPInKristall();
         bool isKristallPresent();
-        
+        void readMPs();
 };
 #endif

@@ -23,6 +23,7 @@ class Eskalation{
         void eskalate();
         void fogger();
         void alarm();
+        void explosion();
         int getEstufe();
         int getZstufe();
 

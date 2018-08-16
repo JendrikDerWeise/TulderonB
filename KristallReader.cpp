@@ -7,8 +7,8 @@ MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance.
 
 void KristallReader::setup(){
     
-    KristallReader::mp=0;
-    KristallReader::mpChanged = false;
+    mp = 100;
+    mpChanged = false;
     SPI.begin();        // Init SPI bus
     mfrc522.PCD_Init(); // Init MFRC522 card
 
@@ -30,8 +30,10 @@ void KristallReader::checkMPInKristall(){
 
     // Show some details of the PICC (that is: the tag/card)
     //MFRC522::PICC_Type piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
+    readMPs();
+}
 
-
+void KristallReader::readMPs(){
     // In this sample we use the second sector,
     // that is: sector #1, covering block #4 up to and including block #7
     byte sector         = 1;
@@ -54,6 +56,9 @@ void KristallReader::checkMPInKristall(){
     
     mp = buffer[0];
     mpChanged = true;
+    //Serial.print("Kristall: ");
+    //Serial.println(buffer[0]);
+    //Serial.println(mp);
 
 
     // Halt PICC
@@ -73,6 +78,7 @@ int KristallReader::getMPInKristall(){
 }
 
 bool KristallReader::isKristallPresent(){
-    return mfrc522.PICC_IsNewCardPresent();
+    mfrc522.PICC_IsNewCardPresent();
+    return mfrc522.PICC_ReadCardSerial();//
 }
 
