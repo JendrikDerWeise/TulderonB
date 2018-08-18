@@ -4,13 +4,21 @@
 #define SS_PIN          10          // Configurable, see typical pin layout above
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance.
+//unsigned long lastCheck = 0;
+int c = 0;
+const int KRISTALLKABEL = 7;
 
 void KristallReader::setup(){
     
     mp = 100;
     mpChanged = false;
+    kristallPresent = true;
     SPI.begin();        // Init SPI bus
     mfrc522.PCD_Init(); // Init MFRC522 card
+    
+    counter = 0;
+    isReading = false;
+    pinMode(KRISTALLKABEL, INPUT_PULLUP);
 
     // Prepare the key (used both as key A and as key B)
     // using FFFFFFFFFFFFh which is the default at chip delivery from the factory
@@ -21,16 +29,22 @@ void KristallReader::setup(){
 
 void KristallReader::checkMPInKristall(){
 // Look for new cards
-    if ( ! mfrc522.PICC_IsNewCardPresent())
+
+    if(digitalRead(KRISTALLKABEL) == LOW){//Kristall weg
+        kristallPresent = true;
+    }else{
+        kristallPresent = false;
+    }
+
+
+    if(!mfrc522.PICC_IsNewCardPresent())
+        return;
+    if(!mfrc522.PICC_ReadCardSerial())
         return;
 
-    // Select one of the cards
-    if ( ! mfrc522.PICC_ReadCardSerial())
-        return;
-
-    // Show some details of the PICC (that is: the tag/card)
-    //MFRC522::PICC_Type piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
     readMPs();
+
+
 }
 
 void KristallReader::readMPs(){
@@ -43,10 +57,11 @@ void KristallReader::readMPs(){
     MFRC522::StatusCode status;
     byte buffer[18];
     byte size = sizeof(buffer);
-
+    
     // Authenticate using key A
     status = (MFRC522::StatusCode) mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, trailerBlock, &key, &(mfrc522.uid));
     if (status != MFRC522::STATUS_OK) {
+        //Serial.println(mfrc522.GetStatusCodeName(status));
         return;
     }
 
@@ -56,15 +71,21 @@ void KristallReader::readMPs(){
     
     mp = buffer[0];
     mpChanged = true;
-    //Serial.print("Kristall: ");
-    //Serial.println(buffer[0]);
-    //Serial.println(mp);
+   // Serial.print("Kristall: ");
+   // Serial.println(buffer[0]);
+    //Serial.println(mp);*/
 
 
-    // Halt PICC
-    mfrc522.PICC_HaltA();
-    // Stop encryption on PCD
-    mfrc522.PCD_StopCrypto1();
+   mfrc522.PICC_HaltA();
+   mfrc522.PCD_StopCrypto1();
+
+    isReading = false;
+    c = 0;
+    checkMPInKristall();
+}
+
+bool KristallReader::isKristallPresent(){
+    return kristallPresent;
 }
 
 bool KristallReader::isMPChanged(){
@@ -73,12 +94,16 @@ bool KristallReader::isMPChanged(){
 
 int KristallReader::getMPInKristall(){
     mpChanged = false;
-    //Serial.print("MP");Serial.print(mp);
+    //Serial.print("MP");Serial.println(mp);
     return mp;
 }
 
-bool KristallReader::isKristallPresent(){
-    mfrc522.PICC_IsNewCardPresent();
-    return mfrc522.PICC_ReadCardSerial();//
+bool KristallReader::kristallCheck(){
+    
+    return mfrc522.PICC_IsNewCardPresent() || mfrc522.PICC_ReadCardSerial();//
+}
+
+void KristallReader::setMPInKristall(int newMP){
+    mp = newMP;
 }
 

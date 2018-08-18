@@ -9,7 +9,6 @@ const int GREEN = 3;
 const int BLACK = 4;
 const int WHITEBLUE = 5;
 const int ENTSCHAERFKABEL = 2;
-const unsigned long defuseTime = 5000; //1h = 3600000 1min = 60000
 const unsigned long crystalTime = 20000; //20sek
 
 Touch touch;
@@ -24,17 +23,24 @@ bool kristallFreigegeben = false;//nicht verwendet
 bool entschaerfbar = false;
 bool kristallEingesetzt = true;//nicht verwendet
 bool timerIsRunning = false;
+bool explodiert = false;
+bool entschaerft = false;
+bool kristallWarWeg = false;
+bool defuseTimerIsRunning = false;
 
 //TIMER
 unsigned long crystalTimer;
+unsigned long lastCheck;
 
 //PARKPLÄTZE
 String msg = "";
 
 void setIdle(){
+	light.setMPmultiplier(kristall.getMPInKristall());
 	light.setEffectState();
 	light.switchColor(PURPLE);
 	idle = true;
+	
 }
 
 void crystalMissing(){
@@ -84,7 +90,7 @@ void btNachricht(){
 		eskalation.alarm();
 
 	else if(msg == "nebel")
-		eskalation.fogger();
+		eskalation.startFogger();
 
 	else if(msg == "explodieren")
 		eskalation.explosion();
@@ -92,25 +98,40 @@ void btNachricht(){
 	else if(msg == "eskalieren")
 		eskalation.eskalate();
 
-	else if(msg == "entschaerf"){}
-		//entschärfmodus starten
+	else if(msg == "entschaerf")
+		kristall.setMPInKristall(0);
 	else
 		Serial.println("Kommando nicht bekannt");
 }
 
 void setup(){
-	Serial.begin(9600);
-	kristall.setup();
+	Serial.begin(9600);	
 	light.setup();
+	kristall.setup();
 	eskalation.setup(&light);
 	touch.setup(&Serial, &eskalation);
 	pinMode(ENTSCHAERFKABEL, INPUT_PULLUP);
 }
 
 void loop(){
-	//if entschärft return
+	if(entschaerft){
+		light.setEffectState();
+		light.switchColor(BLACK);
+		light.makeLight();
+		return;
+	}
+
 	if (Serial.available())      // Daten liegen an
     	btNachricht();		
+
+	if(entschaerfbar){
+			if(digitalRead(ENTSCHAERFKABEL) == HIGH){
+				entschaerft = true;
+				light.setEffectState();
+				light.switchColor(BLACK);
+				light.makeLight();
+			}
+	}
 
 	if(idle){
 		if(kristall.getMPInKristall() < 1){//MP = 0
@@ -120,18 +141,35 @@ void loop(){
 			light.switchColor(WHITEBLUE);
 		}
 		else
-			if(digitalRead(ENTSCHAERFKABEL) == HIGH)//Kabel durchgeschnitten bevor MP = 0
-				eskalation.explosion();
+			if(digitalRead(ENTSCHAERFKABEL) == HIGH){//Kabel durchgeschnitten bevor MP = 0
+				if(!explodiert)
+					eskalation.explosion();
+					explodiert = true;
+			}
 	}
 
 	if(kristall.isKristallPresent()){
-		kristall.checkMPInKristall();
-		if(!idle)
+		if(touch.isKristallFreigegeben()){
+			if(kristallWarWeg && defuseTimerIsRunning){
+				setIdle();
+				defuseTimerIsRunning = false;
+				kristallWarWeg = false;
+				touch.kristallSperren();
+			}
+
+			if(!defuseTimerIsRunning && touch.isKristallFreigegeben()){
+				defuseTimerIsRunning = true;
+				light.setEffectState();
+				light.switchColor(GREEN);
+				light.makeLight();
+				idle = false;
+			}
+		}
+		if(!idle && !entschaerfbar && !defuseTimerIsRunning)
 			setIdle();
 		if(timerIsRunning)
 			timerIsRunning = false;
-		if(touch.isKristallFreigegeben())
-			touch.kristallSperren();
+			
 	}
 	else{//Kristall nicht da
 		if(!touch.isKristallFreigegeben()){
@@ -142,10 +180,28 @@ void loop(){
 					crystalMissing();
 				}
 			}
+		}else{
+			if(!kristallWarWeg){
+			    kristallWarWeg = true;
+			}
+			if(defuseTimerIsRunning){
+				light.fadeToRed(touch.getDefuseTime(), millis() - touch.getReleaseTime());
+			}
 		}
 	}
 
 	light.makeLight();
+
+	if(eskalation.isFogging())
+		eskalation.fogger();
+
+	kristall.checkMPInKristall();
+	
+	if(!touch.isKristallFreigegeben()){
+		defuseTimerIsRunning = false;
+		kristallWarWeg = false;
+		touch.checkTouch();
+	}
 }
 
 

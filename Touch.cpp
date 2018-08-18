@@ -4,6 +4,8 @@ Touch::Touch(){
     cap = Adafruit_CAP1188();
     cap2 = Adafruit_CAP1188();
 	kristallFreigegeben = false;
+	letzteFehleingabe = 0;
+	releaseTime = 0;
 }
 
 void Touch::setup(Stream *_serialRef, Eskalation *e){
@@ -49,13 +51,14 @@ int Touch::getTouchedKey(uint8_t touched) {
 }
 
 void Touch::checkCode() {
-	int code[] = { 2,6,6,2 };
-	int actualInput[2];
+	int code[] = { 1,2,4,5,6,4,3,4,7,2,5 };
+	
 	bool failure = false;
 	long startTime = millis();
 	int counter = 0;
 
 	while (millis() - startTime < inputTime) {
+		
 		if (cap.touched() && cap2.touched()) {
 			uint8_t touched1 = cap.touched();
 			actualInput[0] = getTouchedKey(touched1);
@@ -77,40 +80,78 @@ void Touch::checkCode() {
 					startTime = millis();
 				}
 				else {
-					//_serial->println("Fehleingabe");
-					eskalation->raiseZstufe();
+					//_serial->println("Fehleingabe1");
+					fehleingabe();
 					delay(500);
 					return;
 				}
 			}
 			else {
-				//_serial->println("Fehleingabe");
-				eskalation->raiseZstufe();
+				//_serial->println("Fehleingabe2");
+				fehleingabe();
 				delay(500);
 				return;
 			}
 
-			if (counter == 4) {
+			if (counter == 11) {
 				//_serial->println("Geschafft");
 				//display->showText("Geschafft");
-				kristallFreigegeben = true;
+				releaseKristall();
 				return;
 			}
 		}
 	}
+
+	
 	//_serial->println("Zeit um");
 	//display->showText("Zeit um");
-	eskalation->raiseZstufe();
+	fehleingabe();
 }
 
 bool Touch::isKristallFreigegeben(){
+	if(millis() - releaseTime > defuseTime)
+		kristallSperren();
     return kristallFreigegeben;
 }
 
 void Touch::kristallSperren(){
+	resetActualInput();
 	kristallFreigegeben = false;
 }
 
 void Touch::releaseKristall(){
+	releaseTime = millis();
 	kristallFreigegeben = true;
+}
+
+unsigned long Touch::getReleaseTime(){
+	return releaseTime;
+}
+
+unsigned long Touch::getDefuseTime(){
+	return defuseTime;
+}
+
+void Touch::fehleingabe(){
+	if(isKristallFreigegeben()){
+		resetActualInput();
+		return;
+	}
+
+	if(actualInput[0] == 0 || actualInput[1] == 0){
+		resetActualInput();
+		return;
+	}
+	
+	if(millis() - letzteFehleingabe > 3000){
+		eskalation->raiseZstufe();
+		letzteFehleingabe = millis();
+	}
+
+	resetActualInput();
+}
+
+void Touch::resetActualInput(){
+	actualInput[0] = 0;
+	actualInput[1] = 0;
 }

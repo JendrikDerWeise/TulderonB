@@ -7,9 +7,14 @@
 class NeoPixel{
     private:
         void SetRandomSeed();
-        
+        void redBlink();
+
         int fader;
         int mpMultiplier;
+        bool isBlinking;
+        int blinked;
+        unsigned long startTime;
+        int blinkTimes;
 
     public:
         NeoPixel();
@@ -17,8 +22,8 @@ class NeoPixel{
         void makeLight();
         void switchColor(int);
         void fadeToRed(unsigned long kristallTime, unsigned long timeUsed);
-        void redBlink(int);
         void setEffectState();
         void setMPmultiplier(int mp);
+        void setBlinking(int times);
 };
 #endif

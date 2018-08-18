@@ -6,6 +6,7 @@ Eskalation::Eskalation(){
     fogPin = 7;
     fogTime = 10000;
     maxZstufe = 5;
+    fogging = false;
 }
 
 void Eskalation::setup(NeoPixel *l){
@@ -30,6 +31,7 @@ void Eskalation::raiseZstufe(){
         zStufe++;
     
     eskalate();
+    //Serial.print("e: ");Serial.print(eStufe);Serial.print(" z: ");Serial.println(zStufe);
 }
 
 void Eskalation::dezZstufe(){
@@ -38,7 +40,7 @@ void Eskalation::dezZstufe(){
 }
 
 void Eskalation::redBlinking(){
-    //light->redBlink(eStufe);
+    light->setBlinking(eStufe);
 }
 
 void Eskalation::alarm(){
@@ -47,32 +49,43 @@ void Eskalation::alarm(){
 
 void Eskalation::explosion(){
     Serial.print("bumm");
-    //redBlinking();
-    fogger();
+    redBlinking();
+    startFogger();
+}
+
+void Eskalation::startFogger(){
+    startTime = millis();
+    fogging = true;
 }
 
 void Eskalation::fogger(){
-    unsigned long now = millis();
-    digitalWrite(fogPin, HIGH);
-    while(millis() - now < fogTime){
-        //wait;
+    unsigned long now = millis() - startTime;
+
+    if(now < fogTime)
+        digitalWrite(fogPin, HIGH);
+    else{
+        digitalWrite(fogPin, LOW);
+        fogging = false;
     }
-    digitalWrite(fogPin, LOW);
+}
+
+bool Eskalation::isFogging(){
+    return fogging;
 }
 
 void Eskalation::eskalate(){
     switch(eStufe){
         case 1:
-            //redBlinking();
+            redBlinking();
             break;
         case 2:
             alarm();
-            //redBlinking();
+            redBlinking();
             break;
         case 3:
             alarm();
-            //redBlinking();
-            //fogger();
+            redBlinking();
+            startFogger();
             break;
         case 4:
             explosion();

@@ -10,6 +10,8 @@ class Eskalation{
         int fogPin;
         int fogTime;
         int maxZstufe;
+        unsigned long startTime;
+        bool fogging;
         NeoPixel *light;
 
     public:
@@ -22,10 +24,12 @@ class Eskalation{
         void redBlinking();
         void eskalate();
         void fogger();
+        void startFogger();
         void alarm();
         void explosion();
         int getEstufe();
         int getZstufe();
+        bool isFogging();
 
 };
 #endif

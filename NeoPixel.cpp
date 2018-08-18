@@ -25,6 +25,7 @@ NeoPixel::NeoPixel(){
     fader = 0;
     setMPmultiplier(100);
     time = animationTime - mpMultiplier;
+    isBlinking = false;
     //switchColor(1);
 }
 
@@ -72,6 +73,11 @@ void FadeInFadeOutRinseRepeat(float luminance, RgbColor target)
 
 void NeoPixel::makeLight()
 {
+    if(isBlinking){
+        redBlink();
+        return;
+    }
+
     if (animations.IsAnimating())
     {
         animations.UpdateAnimations();
@@ -110,22 +116,41 @@ void NeoPixel::switchColor(int color){
         //strip.Show();    
 }
 
-/*
-void NeoPixel::redBlink(int times){
-    for(int i = 0; i < times; i++){
-        for (uint16_t pixel = 0; pixel < PixelCount; pixel++)
-            strip.SetPixelColor(pixel, RgbColor(255,0,0));
-        strip.Show();
-        unsigned long now = millis();
-        while(millis()-now < 500){}
+
+void NeoPixel::redBlink(){
+    unsigned long now = millis() - startTime;
+
+    if(now > 1000 && now < 1500){
         for (uint16_t pixel = 0; pixel < PixelCount; pixel++)
             strip.SetPixelColor(pixel, RgbColor(0,0,0));
         strip.Show();
-        now = millis();
-        while(millis()-now < 300){}
+
+        return;
     }
-    makeLight();
-}*/
+
+    if(now < 1000){
+        for (uint16_t pixel = 0; pixel < PixelCount; pixel++)
+            strip.SetPixelColor(pixel, RgbColor(255,0,0));
+        strip.Show();
+
+        return;
+    }
+
+    blinked++;
+    startTime = millis();
+
+    if(blinkTimes == blinked){
+        isBlinking = false;
+        makeLight();
+    }
+}
+
+void NeoPixel::setBlinking(int times){
+    blinked = 0;
+    isBlinking = true;
+    startTime = millis();
+    blinkTimes = times;
+}
 
 void NeoPixel::fadeToRed(unsigned long kristallTime, unsigned long timeUsed){
     unsigned long tick = kristallTime / 255;
