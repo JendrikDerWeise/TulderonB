@@ -3,7 +3,7 @@
 Eskalation::Eskalation(){
     eStufe = 1;
     zStufe = 0;
-    fogPin = 7;
+    fogPin = 6;
     fogTime = 10000;
     maxZstufe = 5;
     fogging = false;

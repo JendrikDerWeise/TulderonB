@@ -1,6 +1,6 @@
 #include "NeoPixel.h"
 
-const uint16_t PixelCount = 24;
+const uint16_t PixelCount = 48;
 const uint8_t PixelPin = 8;
 const uint8_t AnimationChannels = 1;
 const uint16_t animationTime = 10500;
