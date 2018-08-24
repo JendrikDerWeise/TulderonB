@@ -12,6 +12,7 @@ class Touch{
         bool isKristallFreigegeben();
         void kristallSperren();
         void releaseKristall();
+        void reset();
         unsigned long getReleaseTime();
         unsigned long getDefuseTime();
 
@@ -31,7 +32,7 @@ class Touch{
         Stream *_serial;
         Eskalation *eskalation;
 
-        const unsigned long defuseTime = 5000; //1h = 3600000 1min = 60000
+        const unsigned long defuseTime = 3600000; //1h = 3600000 1min = 60000
         
 
 };

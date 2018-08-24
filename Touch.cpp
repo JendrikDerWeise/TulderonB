@@ -34,6 +34,16 @@ void Touch::setup(Stream *_serialRef, Eskalation *e){
 	eskalation = e;
 }
 
+void Touch::reset(){
+	cap.writeRegister(0x2A, 0x80); // 0x2A default 0x80 use 0x41  — Set multiple touches back to off
+	cap.writeRegister(0x44, 0x41);  // 0x44 default 0x40 use 0x41  — Set interrupt on press but not release
+	cap.writeRegister(0x72, 0x00);  // 0x72 default 0x00  — Sets LED links back to off (default)
+
+	cap2.writeRegister(0x2A, 0x80); // 0x2A default 0x80 use 0x41  — Set multiple touches back to off
+	cap2.writeRegister(0x44, 0x41);  // 0x44 default 0x40 use 0x41  — Set interrupt on press but not release
+	cap2.writeRegister(0x72, 0x00);  // 0x72 default 0x00  — Sets LED links back to off (default)
+}
+
 void Touch::checkTouch(){
     if (cap.touched() || cap2.touched())
 		checkCode();
