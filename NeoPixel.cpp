@@ -152,6 +152,12 @@ void NeoPixel::setBlinking(int times){
     blinkTimes = times;
 }
 
+void NeoPixel::confirm(){
+  for (uint16_t pixel = 0; pixel < 48; pixel++)
+    strip.SetPixelColor(pixel, RgbColor(0,255,0));
+  strip.Show();
+}
+
 void NeoPixel::fadeToRed(unsigned long kristallTime, unsigned long timeUsed){
     unsigned long tick = kristallTime / 255;
 

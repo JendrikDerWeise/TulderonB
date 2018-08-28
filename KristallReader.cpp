@@ -71,8 +71,8 @@ void KristallReader::readMPs(){
     
     mp = buffer[0];
     mpChanged = true;
-   // Serial.print("Kristall: ");
-   // Serial.println(buffer[0]);
+    Serial.print("Kristall: ");
+    Serial.println(buffer[0]);
     //Serial.println(mp);*/
 
 

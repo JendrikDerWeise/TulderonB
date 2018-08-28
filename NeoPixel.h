@@ -25,5 +25,6 @@ class NeoPixel{
         void setEffectState();
         void setMPmultiplier(int mp);
         void setBlinking(int times);
+        void confirm();
 };
 #endif

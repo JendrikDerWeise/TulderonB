@@ -6,13 +6,15 @@
 
 class Touch{
     public:
-        void setup(Stream *_serial, Eskalation *e);
+        void setup(Stream *_serial, Eskalation *e, NeoPixel *s);
         void checkTouch();
         Touch();
         bool isKristallFreigegeben();
         void kristallSperren();
         void releaseKristall();
         void reset();
+        void hold();
+        void unhold();
         unsigned long getReleaseTime();
         unsigned long getDefuseTime();
 
@@ -20,8 +22,9 @@ class Touch{
         Adafruit_CAP1188 cap;
         Adafruit_CAP1188 cap2;
         int actualInput[2];
-        long inputTime = 2000;
+        long inputTime = 3000;
         bool kristallFreigegeben;
+        bool isReset;
         void checkCode();
         void fehleingabe();
         void resetActualInput();
@@ -31,6 +34,7 @@ class Touch{
         //Display *display;
         Stream *_serial;
         Eskalation *eskalation;
+        NeoPixel *strip;
 
         const unsigned long defuseTime = 3600000; //1h = 3600000 1min = 60000
         

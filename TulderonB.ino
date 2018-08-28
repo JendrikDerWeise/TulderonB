@@ -10,6 +10,7 @@ const int BLACK = 4;
 const int WHITEBLUE = 5;
 const int ENTSCHAERFKABEL = 2;
 const unsigned long crystalTime = 20000; //20sek
+const unsigned long sensitiveTime = 2000; //2sek
 
 Touch touch;
 KristallReader kristall;
@@ -27,10 +28,12 @@ bool explodiert = false;
 bool entschaerft = false;
 bool kristallWarWeg = false;
 bool defuseTimerIsRunning = false;
+bool sensitiveTimerRunning = false;
 
 //TIMER
 unsigned long crystalTimer;
 unsigned long lastCheck;
+unsigned long momentOfFirstMissing;
 
 //PARKPLÄTZE
 String msg = "";
@@ -44,13 +47,23 @@ void setIdle(){
 }
 
 void crystalMissing(){
-	idle = false;
-	eskalation.raiseZstufe();
-	timerIsRunning = true;
-	//starte timer
-	crystalTimer = millis();
-	light.setEffectState();
-	light.switchColor(RED);
+  if(!sensitiveTimerRunning){
+    sensitiveTimerRunning = true;
+    momentOfFirstMissing = millis();
+    //Serial.println("timer runs");
+    return;
+  }
+  if(millis() - momentOfFirstMissing > sensitiveTime){
+  	idle = false;
+  	eskalation.raiseZstufe();
+  	timerIsRunning = true;
+  	//starte timer
+  	crystalTimer = millis();
+  	light.setEffectState();
+  	light.switchColor(RED);
+    sensitiveTimerRunning = false;
+   // Serial.println("ausgelöst");
+  }
 }
 
 void btNachricht(){
@@ -109,7 +122,7 @@ void setup(){
 	light.setup();
 	kristall.setup();
 	eskalation.setup(&light);
-	touch.setup(&Serial, &eskalation);
+	touch.setup(&Serial, &eskalation, &light);
 	pinMode(ENTSCHAERFKABEL, INPUT_PULLUP);
 }
 
@@ -149,6 +162,10 @@ void loop(){
 	}
 
 	if(kristall.isKristallPresent()){
+    if(sensitiveTimerRunning && millis() - momentOfFirstMissing > sensitiveTime){
+      sensitiveTimerRunning = false;
+    }
+    touch.unhold();
 		if(touch.isKristallFreigegeben()){
 			if(kristallWarWeg && defuseTimerIsRunning){
 				setIdle();
@@ -172,6 +189,7 @@ void loop(){
 			
 	}
 	else{//Kristall nicht da
+    touch.hold();
 		if(!touch.isKristallFreigegeben()){
 			if(!timerIsRunning){//Kristall gerade erst weggenommen
 				crystalMissing();
